@@ -311,7 +311,7 @@
                                   </div>
                                   <div class="col-lg-6">
                                     <div class="popup-right-content">
-                                      <h3>{{product.title}}</h3>
+                                      <h3>{{ product.title }}</h3>
                                       <div class="ratting"><i
                                           class="flaticon-star"></i> <i
                                           class="flaticon-star"></i> <i
@@ -319,24 +319,23 @@
                                         <i class="flaticon-star"></i> <i
                                             class="flaticon-star"></i>
                                         <span>(112)</span></div>
-                                      <p class="text">{{product.description}}</p>
+                                      <p class="text">{{ product.description }}</p>
                                       <div class="price">
-                                        <h2> ${{product.price}}
+                                        <h2> ${{ product.price }}
                                           <del> $65 USD</del>
                                         </h2>
                                         <h6> In stuck</h6>
                                       </div>
-                                      <div class="color-varient"><a href="#0"
-                                                                    class="color-name pink">
-                                        <span>Pink</span> </a> <a href="#0"
-                                                                  class="color-name red">
-                                        <span>Red</span> </a>
-                                        <a href="#0"
-                                           class="color-name yellow"><span>Yellow</span>
-                                        </a> <a href="#0" class="color-name blue">
-                                          <span>Blue</span>
-                                        </a> <a href="#0" class="color-name black">
-                                          <span>Black</span> </a></div>
+                                      <div class="color-varient">
+                                       <template v-for="groupProduct in product.group_products">
+                                         <a v-for="color in groupProduct.colors" href="#0"
+                                            :style="`background: #${color.title};`"
+                                            class="color-name">
+                                           <span>{{color.title}}</span>
+                                         </a>
+                                       </template>
+
+                                      </div>
                                       <div class="add-product">
                                         <h6>Qty:</h6>
                                         <div class="button-group">
@@ -370,12 +369,13 @@
                                 </div>
                               </div>
                             </div>
-                            <div class="products-three-single-content text-center"> <span>{{product.category.title}}</span>
-                              <h5><a href="shop-details-3.html">{{product.title}}</a>
+                            <div class="products-three-single-content text-center">
+                              <span>{{ product.category.title }}</span>
+                              <h5><a href="shop-details-3.html">{{ product.title }}</a>
                               </h5>
                               <p>
                                 <del>$200.00</del>
-                                ${{product.price}}
+                                ${{ product.price }}
                               </p>
                             </div>
                           </div>
