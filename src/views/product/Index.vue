@@ -135,8 +135,8 @@
                   <div class="single-sidebar-box mt-30 wow fadeInUp animated pb-0 border-bottom-0 ">
                     <h4>Tags </h4>
                     <ul class="popular-tag">
-                      <li  v-for="tag in filterList.tags">
-                        <a @click.prevent="addTag(tag.id)"  href="#0">{{ tag.title }}</a>
+                      <li v-for="tag in filterList.tags">
+                        <a @click.prevent="addTag(tag.id)" href="#0">{{ tag.title }}</a>
                       </li>
                     </ul>
                   </div>
@@ -2152,18 +2152,40 @@
                   </div>
                 </div>
               </div>
-              <div class="row">
+              <div class="row" v-if="pagination.last_page > 1">
                 <div class="col-12 d-flex justify-content-center wow fadeInUp animated">
                   <ul class="pagination text-center">
-                    <li class="next"><a href="#0"><i class="flaticon-left-arrows"
-                                                     aria-hidden="true"></i> </a></li>
-                    <li><a href="#0">1</a></li>
-                    <li><a href="#0" class="active">2</a></li>
-                    <li><a href="#0">3</a></li>
-                    <li><a href="#0">...</a></li>
-                    <li><a href="#0">10</a></li>
-                    <li class="next"><a href="#0"><i class="flaticon-next-1"
-                                                     aria-hidden="true"></i> </a></li>
+
+                    <li v-if="pagination.current_page !== 1" class="next">
+                      <a @click.prevent="getProducts(pagination.current_page - 1)" href="#0"><i
+                          class="flaticon-left-arrows" aria-hidden="true"></i> </a>
+                    </li>
+
+                    <li v-for="link in pagination.links">
+                      <template v-if="Number(link.label) &&
+                     (pagination.current_page - link.label < 2 &&
+                      pagination.current_page - link.label > -2) ||
+                      Number(link.label) === 1 || Number(link.label) === pagination.last_page">
+                        <a @click.prevent="getProducts(link.label)" :class="link.active ? 'active' : ''"
+                           href="#0">{{ link.label }}</a>
+                      </template>
+
+                      <template v-if="Number(link.label) &&
+                    pagination.current_page !== 3 &&
+                     pagination.current_page - link.label === 2 ||
+                      pagination.current_page !== pagination.last_page - 2 &&
+                        pagination.current_page - link.label === -2">
+                        <a>...</a>
+                      </template>
+                    </li>
+
+                    <li v-if="pagination.current_page !== pagination.last_page" class="next">
+                      <a @click.prevent="getProducts(pagination.current_page + 1)" href="#0"><i class="flaticon-next-1"
+                                                                                                aria-hidden="true">
+
+                      </i>
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -2195,34 +2217,20 @@ export default {
       colors: [],
       tags: [],
       prices: [],
+      pagination: [],
     }
   },
 
   methods: {
     filterProducts() {
-        let prices = $('#priceRange').val()
+      let prices = $('#priceRange').val()
 
       this.prices = prices.replace(/[\s+]|[$]/g, '').split('-')
 
-      this.axios.post('http://localhost:8876/api/products', {
-
-        'categories': this.categories,
-        'colors': this.colors,
-        'tags': this.tags,
-        'prices': this.prices,
-
-
-
-      })
-          .then(res => {
-            this.products = res.data.data;
-          })
-          .finally(v => {
-            $(document).trigger('changed')
-          })
+      this.getProducts()
     },
     addColor(id) {
-      if(!this.colors.includes(id)) {
+      if (!this.colors.includes(id)) {
         this.colors.push(id)
       } else {
         this.colors = this.colors.filter(elem => {
@@ -2233,7 +2241,7 @@ export default {
 
 
     addTag(id) {
-      if(!this.tags.includes(id)) {
+      if (!this.tags.includes(id)) {
         this.tags.push(id)
       } else {
         this.tags = this.tags.filter(elem => {
@@ -2242,12 +2250,21 @@ export default {
       }
     },
 
-    getProducts() {
+
+    getProducts(page = 1) {
       this.axios.post('http://localhost:8876/api/products', {
 
+        'categories': this.categories,
+        'colors': this.colors,
+        'tags': this.tags,
+        'prices': this.prices,
+        'page': page,
       })
           .then(res => {
-            this.products = res.data.data;
+            this.products = res.data.data
+            this.pagination = res.data.meta
+            console.log(res)
+
           })
           .finally(v => {
             $(document).trigger('changed')
@@ -2264,6 +2281,7 @@ export default {
             $(document).trigger('changed')
           })
     },
+
 
     getFilterList() {
       this.axios.get(`http://localhost:8876/api/products/filters`)
