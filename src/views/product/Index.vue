@@ -103,8 +103,12 @@
                     <h4>Select Categories</h4>
                     <div class="checkbox-item">
                       <form>
-                        <div v-for="category in filterList.categories" class="form-group"><input type="checkbox" :id="category.id"> <label
-                            :for="category.id">{{category.title}}</label>
+                        <div v-for="category in filterList.categories" class="form-group"><input :value="category.id"
+                                                                                                 v-model="categories"
+                                                                                                 type="checkbox"
+                                                                                                 :id="category.id">
+                          <label
+                              :for="category.id">{{ category.title }}</label>
                         </div>
                       </form>
                     </div>
@@ -113,7 +117,8 @@
                     <h4>Color Option </h4>
                     <ul class="color-option">
                       <li v-for="color in filterList.colors">
-                        <a href="#0" class="color-option-single" :style="`background: #${color.title}`"> <span>{{color.title}}</span> </a></li>
+                        <a @click.prevent="addColor(color.id)" href="#0" class="color-option-single"
+                           :style="`background: #${color.title}`"> <span>{{ color.title }}</span> </a></li>
                     </ul>
                   </div>
                   <div class="single-sidebar-box mt-30 wow fadeInUp animated">
@@ -122,7 +127,7 @@
                       <div id="price-range" class="slider"></div>
                       <div class="output-price"><label for="priceRange">Price:</label> <input
                           type="text" id="priceRange" readonly></div>
-                      <button class="filterbtn"
+                      <button @click.prevent="filterProducts" class="filterbtn"
                               type="submit"> Filter
                       </button>
                     </div>
@@ -130,7 +135,9 @@
                   <div class="single-sidebar-box mt-30 wow fadeInUp animated pb-0 border-bottom-0 ">
                     <h4>Tags </h4>
                     <ul class="popular-tag">
-                      <li  v-for="tag in filterList.tags"><a href="#0">{{tag.title}}</a></li>
+                      <li  v-for="tag in filterList.tags">
+                        <a @click.prevent="addTag(tag.id)"  href="#0">{{ tag.title }}</a>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -274,7 +281,8 @@
                                       </div>
                                       <div class="color-varient">
                                         <template v-for="groupProduct in popupProduct.group_products">
-                                          <a @click.prevent="getProduct(groupProduct.id)" v-for="color in groupProduct.colors" href="#0"
+                                          <a @click.prevent="getProduct(groupProduct.id)"
+                                             v-for="color in groupProduct.colors" href="#0"
                                              :style="`background: #${color.title};`"
                                              class="color-name">
                                             <span>{{ color.title }}</span>
@@ -2173,7 +2181,7 @@ export default {
   name: "index",
 
   mounted() {
-    $(document).trigger('init')
+    $(document).trigger('changed')
     this.getProducts()
     this.getFilterList()
   },
@@ -2183,17 +2191,66 @@ export default {
       products: [],
       popupProduct: null,
       filterList: [],
+      categories: [],
+      colors: [],
+      tags: [],
+      prices: [],
     }
   },
 
   methods: {
-    getProducts() {
-      this.axios.get('http://localhost:8876/api/products')
+    filterProducts() {
+        let prices = $('#priceRange').val()
+
+      this.prices = prices.replace(/[\s+]|[$]/g, '').split('-')
+
+      this.axios.post('http://localhost:8876/api/products', {
+
+        'categories': this.categories,
+        'colors': this.colors,
+        'tags': this.tags,
+        'prices': this.prices,
+
+
+
+      })
           .then(res => {
             this.products = res.data.data;
           })
           .finally(v => {
-            $(document).trigger('init')
+            $(document).trigger('changed')
+          })
+    },
+    addColor(id) {
+      if(!this.colors.includes(id)) {
+        this.colors.push(id)
+      } else {
+        this.colors = this.colors.filter(elem => {
+          return elem !== id
+        })
+      }
+    },
+
+
+    addTag(id) {
+      if(!this.tags.includes(id)) {
+        this.tags.push(id)
+      } else {
+        this.tags = this.tags.filter(elem => {
+          return elem !== id
+        })
+      }
+    },
+
+    getProducts() {
+      this.axios.post('http://localhost:8876/api/products', {
+
+      })
+          .then(res => {
+            this.products = res.data.data;
+          })
+          .finally(v => {
+            $(document).trigger('changed')
           })
     },
 
@@ -2204,7 +2261,7 @@ export default {
             this.popupProduct = res.data.data;
           })
           .finally(v => {
-            $(document).trigger('init')
+            $(document).trigger('changed')
           })
     },
 
@@ -2229,7 +2286,7 @@ export default {
 
           })
           .finally(v => {
-            $(document).trigger('init')
+            $(document).trigger('changed')
           })
     },
 
